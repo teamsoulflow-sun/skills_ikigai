@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Sparkles, 
-  Target, 
-  ArrowRight, 
-  Share2, 
-  Copy, 
+import {
+  ChevronRight,
+  ChevronLeft,
+  Sparkles,
+  Target,
+  ArrowRight,
+  Share2,
+  Copy,
   Check,
   Loader2,
   Brain,
@@ -15,10 +15,10 @@ import {
 } from "lucide-react";
 import Markdown from "react-markdown";
 import confetti from "canvas-confetti";
-import { 
-  SkillZone, 
-  STATEMENTS, 
-  SKILL_ZONES_INFO, 
+import {
+  SkillZone,
+  STATEMENTS,
+  SKILL_ZONES_INFO,
   AssessmentResult,
   AGE_BANDS,
   ROLE_CATEGORIES,
@@ -48,28 +48,7 @@ export default function App() {
   const [result, setResult] = useState<AssessmentResult | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Check for result ID in URL
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
-    if (id) {
-      fetchResult(id);
-    }
-  }, []);
-
-  const fetchResult = async (id: string) => {
-    try {
-      const res = await fetch(`/api/assessments/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setResult(data.data);
-        setStep("results");
-      }
-    } catch (error) {
-      console.error("Error fetching result:", error);
-    }
-  };
-
+  // Result sharing is now via summary copy only as we are moving to static hosting
   const handleStart = () => setStep("basics");
 
   const handleBasicsSubmit = (e: React.FormEvent) => {
@@ -107,10 +86,10 @@ export default function App() {
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStep("loading");
-    
+
     const finalScores = calculateFinalScores();
     const id = Math.random().toString(36).substring(2, 15);
-    
+
     const initialResult: AssessmentResult = {
       id,
       ...formData,
@@ -135,13 +114,6 @@ export default function App() {
     try {
       const report = await generateSkillReport(initialResult);
       const finalResult = { ...initialResult, report };
-      
-      // Save to DB
-      await fetch("/api/assessments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, name: formData.name, data: finalResult }),
-      });
 
       setResult(finalResult);
       setStep("results");
@@ -162,7 +134,7 @@ export default function App() {
 
   const copyToClipboard = () => {
     if (!result) return;
-    const text = `SoulGrow Skill Diagnostic Result for ${result.name}\n\n${result.report?.split('\n').slice(0, 10).join('\n')}...\n\nView full result: ${window.location.origin}?id=${result.id}`;
+    const text = `SoulGrow Skill Diagnostic Result for ${result.name}\n\n${result.report}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -170,7 +142,7 @@ export default function App() {
 
   const shareToWhatsApp = () => {
     if (!result) return;
-    const text = encodeURIComponent(`I just found my SoulGrow Skill Stack! 🌿\n\nCheck out my diagnostic results here: ${window.location.origin}?id=${result.id}`);
+    const text = encodeURIComponent(`I just completed my SoulGrow Skill Stack! 🌿\n\nGet your diagnostic here: ${window.location.origin}`);
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 
@@ -183,13 +155,12 @@ export default function App() {
             key={opt.id}
             type="button"
             onClick={() => onChange(opt.id)}
-            className={`p-4 rounded-2xl text-left border transition-all ${
-              value === opt.id 
-                ? "bg-brand-olive text-white border-brand-olive shadow-md" 
-                : "bg-white border-brand-ink/10 hover:border-brand-olive/50"
-            }`}
+            className={`p-4 rounded-2xl text-left border transition-all ${value === opt.id
+              ? "bg-brand-olive text-white border-brand-olive shadow-md"
+              : "bg-white border-brand-ink/10 hover:border-brand-olive/50"
+              }`}
           >
-            <span className="text-lg font-serif">{opt.text}</span>
+            <span className="text-base md:text-lg font-serif">{opt.text}</span>
           </button>
         ))}
       </div>
@@ -200,7 +171,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col items-center p-4 md:p-8 max-w-2xl mx-auto">
       <AnimatePresence mode="wait">
         {step === "landing" && (
-          <motion.div 
+          <motion.div
             key="landing"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -210,13 +181,13 @@ export default function App() {
             <div className="mb-8 inline-block p-4 rounded-full bg-brand-olive/10">
               <Sparkles className="w-12 h-12 text-brand-olive" />
             </div>
-            <h1 className="text-5xl md:text-6xl font-display mb-6 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-display mb-6 leading-tight">
               Skill Clarity <br /><span className="italic">Diagnostic</span>
             </h1>
-            <p className="text-xl mb-10 text-brand-ink/70 max-w-md mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl mb-10 text-brand-ink/70 max-w-md mx-auto leading-relaxed px-4">
               A psychologically intelligent assessment to uncover your unique superpowers and align with your Ikigai.
             </p>
-            <button 
+            <button
               onClick={handleStart}
               className="bg-brand-olive text-white px-10 py-4 rounded-full text-lg font-medium hover:opacity-90 transition-all flex items-center gap-2 mx-auto"
             >
@@ -227,7 +198,7 @@ export default function App() {
         )}
 
         {step === "basics" && (
-          <motion.form 
+          <motion.form
             key="basics"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -236,57 +207,57 @@ export default function App() {
             className="w-full space-y-10 py-8"
           >
             <div className="space-y-2">
-              <h2 className="text-3xl font-display">The Basics</h2>
-              <p className="text-brand-ink/60">Let's start with who you are.</p>
+              <h2 className="text-2xl md:text-3xl font-display">The Basics</h2>
+              <p className="text-brand-ink/60 text-sm md:text-base">Let's start with who you are.</p>
             </div>
-            
+
             <div className="space-y-8">
               <div className="space-y-2">
                 <label className="text-sm uppercase tracking-wider font-semibold opacity-70">Full Name</label>
-                <input 
+                <input
                   required
-                  type="text" 
+                  type="text"
                   value={formData.name}
-                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full bg-white border-b border-brand-ink/20 p-3 focus:border-brand-olive outline-none text-xl font-serif"
                   placeholder="Your Name"
                 />
               </div>
 
-              <MCQGroup 
+              <MCQGroup
                 title="Age Band"
                 options={AGE_BANDS}
                 value={formData.ageBand}
-                onChange={val => setFormData({...formData, ageBand: val})}
+                onChange={val => setFormData({ ...formData, ageBand: val })}
               />
 
-              <MCQGroup 
+              <MCQGroup
                 title="Current Role Category"
                 options={ROLE_CATEGORIES}
                 value={formData.roleCategory}
-                onChange={val => setFormData({...formData, roleCategory: val})}
+                onChange={val => setFormData({ ...formData, roleCategory: val })}
               />
 
-              <MCQGroup 
+              <MCQGroup
                 title="Primary Goal"
                 options={PRIMARY_GOALS}
                 value={formData.primaryGoal}
-                onChange={val => setFormData({...formData, primaryGoal: val})}
+                onChange={val => setFormData({ ...formData, primaryGoal: val })}
               />
 
               <div className="space-y-2">
                 <label className="text-sm uppercase tracking-wider font-semibold opacity-70">16P Type (Optional)</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={formData.personalityType}
-                  onChange={e => setFormData({...formData, personalityType: e.target.value})}
+                  onChange={e => setFormData({ ...formData, personalityType: e.target.value })}
                   className="w-full bg-white border-b border-brand-ink/20 p-3 focus:border-brand-olive outline-none text-xl font-serif uppercase"
                   placeholder="e.g. INFJ"
                 />
               </div>
             </div>
 
-            <button 
+            <button
               type="submit"
               className="w-full bg-brand-olive text-white py-4 rounded-full text-lg font-medium hover:opacity-90 transition-all flex items-center justify-center gap-2"
             >
@@ -296,7 +267,7 @@ export default function App() {
         )}
 
         {step === "sectionA" && (
-          <motion.form 
+          <motion.form
             key="sectionA"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -311,13 +282,13 @@ export default function App() {
 
             <div className="space-y-8">
               {EVIDENCE_MCQS.map(mcq => (
-                <MCQGroup 
+                <MCQGroup
                   key={mcq.id}
                   title={mcq.question}
                   options={mcq.options}
                   value={formData.evidenceMCQs[mcq.id] || ""}
                   onChange={val => setFormData({
-                    ...formData, 
+                    ...formData,
                     evidenceMCQs: { ...formData.evidenceMCQs, [mcq.id]: val }
                   })}
                 />
@@ -334,26 +305,27 @@ export default function App() {
                   • What was the outcome for others? <br />
                   • Why did it feel effortless?
                 </p>
-                <textarea 
+                <textarea
                   required
                   value={formData.evidenceReflective}
-                  onChange={e => setFormData({...formData, evidenceReflective: e.target.value})}
+                  onChange={e => setFormData({ ...formData, evidenceReflective: e.target.value })}
                   rows={6}
                   className="w-full bg-white border border-brand-ink/10 rounded-2xl p-6 focus:border-brand-olive outline-none text-lg font-serif leading-relaxed shadow-sm"
                   placeholder="Describe your flow state in detail..."
+                  style={{ fontSize: '16px' }}
                 />
               </div>
             </div>
 
             <div className="flex gap-4">
-              <button 
+              <button
                 type="button"
                 onClick={() => setStep("basics")}
                 className="flex-1 border border-brand-olive text-brand-olive py-4 rounded-full text-lg font-medium hover:bg-brand-olive/5 transition-all flex items-center justify-center gap-2"
               >
                 <ChevronLeft className="w-5 h-5" /> Back
               </button>
-              <button 
+              <button
                 type="submit"
                 className="flex-[2] bg-brand-olive text-white py-4 rounded-full text-lg font-medium hover:opacity-90 transition-all flex items-center justify-center gap-2"
               >
@@ -364,7 +336,7 @@ export default function App() {
         )}
 
         {step === "sectionB" && (
-          <motion.div 
+          <motion.div
             key="sectionB"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -381,14 +353,14 @@ export default function App() {
                 <div key={s.id} className="space-y-6">
                   <div className="flex gap-4 items-start">
                     <span className="text-sm font-mono opacity-30 mt-1">{(index + 1).toString().padStart(2, '0')}</span>
-                    <p className="text-xl leading-snug">{s.text}</p>
+                    <p className="text-lg md:text-xl leading-snug">{s.text}</p>
                   </div>
                   <div className="flex justify-between items-center gap-4 px-2">
                     <span className="text-xs uppercase tracking-tighter opacity-40">Not me</span>
-                    <input 
-                      type="range" 
-                      min="1" 
-                      max="5" 
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
                       step="1"
                       value={scores[s.id] || 3}
                       onChange={e => handleSliderChange(s.id, parseInt(e.target.value))}
@@ -404,14 +376,14 @@ export default function App() {
             </div>
 
             <div className="flex gap-4 pt-8">
-              <button 
+              <button
                 type="button"
                 onClick={() => setStep("sectionA")}
                 className="flex-1 border border-brand-olive text-brand-olive py-4 rounded-full text-lg font-medium hover:bg-brand-olive/5 transition-all flex items-center justify-center gap-2"
               >
                 <ChevronLeft className="w-5 h-5" /> Back
               </button>
-              <button 
+              <button
                 onClick={handleSectionBSubmit}
                 className="flex-[2] bg-brand-olive text-white py-4 rounded-full text-lg font-medium hover:opacity-90 transition-all flex items-center justify-center gap-2"
               >
@@ -422,7 +394,7 @@ export default function App() {
         )}
 
         {step === "sectionC" && (
-          <motion.form 
+          <motion.form
             key="sectionC"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -437,13 +409,13 @@ export default function App() {
 
             <div className="space-y-8">
               {CONSTRAINT_MCQS.map(mcq => (
-                <MCQGroup 
+                <MCQGroup
                   key={mcq.id}
                   title={mcq.question}
                   options={mcq.options}
                   value={formData.constraintMCQs[mcq.id] || ""}
                   onChange={val => setFormData({
-                    ...formData, 
+                    ...formData,
                     constraintMCQs: { ...formData.constraintMCQs, [mcq.id]: val }
                   })}
                 />
@@ -460,10 +432,10 @@ export default function App() {
                   • What internal or external noise is stopping you? <br />
                   • What would change if you had total clarity?
                 </p>
-                <textarea 
+                <textarea
                   required
                   value={formData.constraintReflective}
-                  onChange={e => setFormData({...formData, constraintReflective: e.target.value})}
+                  onChange={e => setFormData({ ...formData, constraintReflective: e.target.value })}
                   rows={6}
                   className="w-full bg-white border border-brand-ink/10 rounded-2xl p-6 focus:border-brand-olive outline-none text-lg font-serif leading-relaxed shadow-sm"
                   placeholder="Reflect on your growth edge..."
@@ -472,14 +444,14 @@ export default function App() {
             </div>
 
             <div className="flex gap-4">
-              <button 
+              <button
                 type="button"
                 onClick={() => setStep("sectionB")}
                 className="flex-1 border border-brand-olive text-brand-olive py-4 rounded-full text-lg font-medium hover:bg-brand-olive/5 transition-all flex items-center justify-center gap-2"
               >
                 <ChevronLeft className="w-5 h-5" /> Back
               </button>
-              <button 
+              <button
                 type="submit"
                 className="flex-[2] bg-brand-olive text-white py-4 rounded-full text-lg font-medium hover:opacity-90 transition-all flex items-center justify-center gap-2"
               >
@@ -490,7 +462,7 @@ export default function App() {
         )}
 
         {step === "loading" && (
-          <motion.div 
+          <motion.div
             key="loading"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -509,7 +481,7 @@ export default function App() {
         )}
 
         {step === "results" && result && (
-          <motion.div 
+          <motion.div
             key="results"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -529,7 +501,7 @@ export default function App() {
                 .map(([zone, score], i) => (
                   <div key={zone} className="bg-white p-8 rounded-3xl shadow-sm border border-brand-ink/5 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-10">
-                      <span className="text-8xl font-display">0{i+1}</span>
+                      <span className="text-8xl font-display">0{i + 1}</span>
                     </div>
                     <h3 className="text-2xl font-display mb-2">{zone}</h3>
                     <p className="text-brand-ink/60 mb-4">{SKILL_ZONES_INFO[zone as SkillZone].description}</p>
@@ -560,21 +532,21 @@ export default function App() {
 
             <div className="flex flex-col gap-4 pt-8">
               <div className="flex gap-4">
-                <button 
+                <button
                   onClick={copyToClipboard}
                   className="flex-1 bg-white border border-brand-ink/10 py-4 rounded-full text-lg font-medium hover:bg-brand-ink/5 transition-all flex items-center justify-center gap-2"
                 >
                   {copied ? <Check className="w-5 h-5 text-green-600" /> : <Copy className="w-5 h-5" />}
                   {copied ? "Copied!" : "Copy Summary"}
                 </button>
-                <button 
+                <button
                   onClick={shareToWhatsApp}
                   className="flex-1 bg-brand-olive text-white py-4 rounded-full text-lg font-medium hover:opacity-90 transition-all flex items-center justify-center gap-2"
                 >
                   <Share2 className="w-5 h-5" /> Share Result
                 </button>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   window.location.href = window.location.origin;
                 }}
@@ -586,7 +558,7 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       <footer className="mt-auto py-12 text-center opacity-30 text-xs uppercase tracking-[0.2em]">
         SoulGrow &copy; {new Date().getFullYear()} — Zen Gym for the Soul
       </footer>
