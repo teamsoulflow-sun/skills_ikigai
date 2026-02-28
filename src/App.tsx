@@ -26,7 +26,7 @@ import {
   EVIDENCE_MCQS,
   CONSTRAINT_MCQS
 } from "./constants";
-import { generateSkillReport } from "./services/geminiService";
+import { generateSkillReport } from "./services/aiService";
 
 type Step = "landing" | "basics" | "sectionA" | "sectionB" | "sectionC" | "loading" | "results";
 

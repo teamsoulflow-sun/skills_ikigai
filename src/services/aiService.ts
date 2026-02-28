@@ -1,7 +1,10 @@
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 import { SkillZone, AssessmentResult } from "../constants";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || "",
+  dangerouslyAllowBrowser: true, // Needed for frontend-only client-side calls
+});
 
 export async function generateSkillReport(result: AssessmentResult): Promise<string> {
   const sortedZones = Object.entries(result.scores)
@@ -53,12 +56,12 @@ export async function generateSkillReport(result: AssessmentResult): Promise<str
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash", // Using a reliable model
-      contents: [{ parts: [{ text: prompt }] }],
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
     });
 
-    return response.text || "Failed to generate report.";
+    return response.choices[0].message.content || "Failed to generate report.";
   } catch (error) {
     console.error("Error generating report:", error);
     return "An error occurred while generating your personalized report. Please try again.";
